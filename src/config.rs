@@ -5,7 +5,7 @@ use serde::Deserialize;
 pub enum AppEnv {
     Production,
     Development,
-    Staging
+    Staging,
 }
 
 impl AsRef<str> for AppEnv {
@@ -32,28 +32,31 @@ impl Default for AppConfig {
             env: AppEnv::Development,
             host: "0.0.0.0".to_string(),
             port: 8080,
-            loki: None
+            loki: None,
         }
-    } 
+    }
 }
- 
+
 impl AppConfig {
     pub fn from_env() -> Self {
         let source = Environment::default().separator("_");
         Config::builder()
-            .add_source(source).build().unwrap()
-            .try_deserialize().unwrap()
+            .add_source(source)
+            .build()
+            .unwrap()
+            .try_deserialize()
+            .unwrap()
     }
 }
 
 #[derive(Deserialize, Debug)]
 pub struct LokiConfig {
     pub host: String,
-    pub port: u16
+    pub port: u16,
 }
 
 impl LokiConfig {
     pub fn get_url(&self) -> String {
-        format!{"http://{}:{}", self.host, self.port}
+        format! {"http://{}:{}", self.host, self.port}
     }
 }
