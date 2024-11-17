@@ -1,14 +1,10 @@
-use actix_web::{get, middleware::Logger, App, HttpServer, Responder};
+use actix_web::{middleware::Logger, web, App, HttpServer};
 use rust_auth_service::{
+    api::api_v1_cfg,
     config::AppConfig,
     utils::{logging::custom_status_info, tracing::setup_tracing},
 };
 use std::error::Error;
-
-#[get("/")]
-async fn index() -> impl Responder {
-    "Hello, World!"
-}
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
@@ -28,7 +24,7 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 )
                 .custom_response_replace("STATUS_INFO", |res| custom_status_info(res).to_string()),
             )
-            .service(index)
+            .service(web::scope("/api/v1").configure(api_v1_cfg))
     })
     .bind((config.host, config.port))?
     .run()
