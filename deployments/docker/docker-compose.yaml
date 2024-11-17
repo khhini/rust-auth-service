@@ -1,0 +1,23 @@
+version: '3.8'
+services:
+  rust-auth-service: 
+    build:
+      context: ../../ 
+      dockerfile: deployments/docker/Dockerfile
+    container_name: rust-auth-service
+    image: asia-southeast2-docker.pkg.dev/khhini-devops-2705/docker-repo/rust-auth-service
+    environment:
+      ENV: development
+      PORT: 3000
+      HOST: 0.0.0.0
+      LOKI_HOST: loki
+      LOKI_PORT: 3100
+      RUST_BACKTRACE: full
+    ports:
+      - 8080:3000
+    networks:
+      - devops
+networks:
+  devops:
+    name: devops-net     
+    external: true
