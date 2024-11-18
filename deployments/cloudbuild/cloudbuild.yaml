@@ -35,7 +35,7 @@ substitutions:
   # DEPLOYMENT
   _APP_NAME: rust-auth
   _APP_SERVICE: api
-  _APP_PROJECT_ID: dashboard-digi-spbu-ppn
+  _APP_PROJECT_ID: khhini-development-sandbox
   _APP_REGION: asia-southeast2
   _ARTIFACT_REGISTRY: asia-southeast2-docker.pkg.dev/khhini-devops-2705/docker-repo
 
