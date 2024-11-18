@@ -1,12 +1,12 @@
 steps:
-  - name: gcr.io/k8s-skaffold/pack
-    id: Buildpack
-    entrypoint: pack
+  - name: gcr.io/cloud-builders/docker
+    id: Build Docker Image
     args:
       - build
-      - ${_ARTIFACT_REGISTRY_URI}/${_APP_NAME}/${_APP_SERVICE}:dev-$SHORT_SHA
-      - '--builder=gcr.io/buildpacks/builder:v1'
-      - '--path=.'
+      - --file=deployments/docker/Dockerfile
+      - --tag=${_ARTIFACT_REGISTRY_URI}/${_APP_NAME}/${_APP_SERVICE}:dev-$SHORT_SHA
+      - --tag=${_ARTIFACT_REGISTRY_URI}/${_APP_NAME}/${_APP_SERVICE}:latest
+      - '.'
 
   - name: gcr.io/cloud-builders/docker
     args:
