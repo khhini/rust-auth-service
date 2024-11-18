@@ -1,0 +1,54 @@
+steps:
+  - name: gcr.io/k8s-skaffold/pack
+    id: Buildpack
+    entrypoint: pack
+    args:
+      - build
+      - ${_ARTIFACT_REGISTRY_URI}/${_APP_NAME}/${_APP_SERVICE}:dev-$SHORT_SHA
+      - '--builder=gcr.io/buildpacks/builder:v1'
+      - '--path=.'
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - tag
+      - ${_ARTIFACT_REGISTRY_URI}/${_APP_NAME}/${_APP_SERVICE}:dev-$SHORT_SHA
+      - ${_ARTIFACT_REGISTRY_URI}/${_APP_NAME}/${_APP_SERVICE}:latest
+
+  - name: gcr.io/cloud-builders/docker
+    args:
+      - push
+      - --all-tags
+      - ${_ARTIFACT_REGISTRY_URI}/${_APP_NAME}/${_APP_SERVICE}
+
+  - name: gcr.io/cloud-builders/gcloud
+    id: Deploy to dev ENV
+    args:
+      - run
+      - deploy
+      - ${_APP_NAME}-${_APP_SERVICE}-crs
+      - --image=${_ARTIFACT_REGISTRY_URI}/${_APP_NAME}/${_APP_SERVICE}:dev-$SHORT_SHA
+      - --project=${_APP_PROJECT_ID}
+      - --region=${_APP_REGION}
+      - --set-env-vars=ENV=${_APP_ENV}
+
+substitutions:
+  # DEPLOYMENT
+  _APP_NAME: rust-auth
+  _APP_SERVICE: api
+  _APP_PROJECT_ID: dashboard-digi-spbu-ppn
+  _APP_REGION: asia-southeast2
+  _ARTIFACT_REGISTRY: asia-southeast2-docker.pkg.dev/khhini-devops-2705/docker-repo
+
+  # APP ENV
+  _APP_ENV: development
+
+  # APP SCRET ENV
+
+  # NOTIFICATION CONFIG
+  # _COMMIT_USER: $(csr.refUpdateEvent.email)
+  # _COMMIT_URL: https://source.cloud.google.com/${PROJECT_ID}/${REPO_NAME}/+/${COMMIT_SHA}
+  # _ADDITIONAL_RECIPIENTS: example@gmail.com,
+
+options:
+  dynamicSubstitutions: true
+  logging: CLOUD_LOGGING_ONLY
