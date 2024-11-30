@@ -1,22 +1,22 @@
 use actix_web::{middleware::Logger, web, App, HttpServer};
 use rust_auth_service::{
     api::api_v1_cfg,
-    config::AppConfig,
-    utils::{logging::custom_status_info, tracing::setup_tracing},
+    config::get_config_from_env,
+    infrastructure::postgres_database::PostgresDatabase,
+    util::{logging::custom_status_info, tracing::setup_tracing},
 };
-use std::error::Error;
+use std::{error::Error, sync::Arc};
 
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
-    let config = AppConfig::from_env();
+    let config = Arc::new(get_config_from_env());
+    setup_tracing(&config.loki.get_url(), config.env)?;
 
-    if let Some(loki_config) = config.loki {
-        setup_tracing(&loki_config.get_url(), config.env)?;
-    } else {
-        env_logger::init_from_env(env_logger::Env::new().default_filter_or("debug"));
-    }
+    let db = PostgresDatabase::new(config.database.clone()).await;
 
-    let _ = HttpServer::new(|| {
+    let app_data_config = web::Data::new(Arc::clone(&config));
+
+    let _ = HttpServer::new(move || {
         App::new()
             .wrap(
                 Logger::new(
@@ -24,9 +24,10 @@ async fn main() -> Result<(), Box<dyn Error>> {
                 )
                 .custom_response_replace("STATUS_INFO", |res| custom_status_info(res).to_string()),
             )
-            .service(web::scope("/api/v1").configure(api_v1_cfg))
+            .app_data(app_data_config.clone())
+            .service(web::scope("/api/v1").configure(|cfg| api_v1_cfg(cfg, db.pool.clone())))
     })
-    .bind((config.host, config.port))?
+    .bind((config.host.clone(), config.port))?
     .run()
     .await;
 

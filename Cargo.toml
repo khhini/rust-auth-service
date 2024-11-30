@@ -5,11 +5,17 @@ edition = "2021"
 
 [dependencies]
 actix-web = "4.9.0"
+argon2 = { version = "0.5.3", features = ["alloc", "password-hash"] }
+async-trait = "0.1.83"
+chrono = { version = "0.4.38", features = ["serde"] }
 config = "0.14.1"
+dotenv = "0.15.0"
 env_logger = "0.11.5"
 serde = { version = "1.0.215", features = ["derive"] }
+sqlx = { version = "0.8.2", features = ["chrono", "postgres", "runtime-tokio", "uuid"] }
 tokio = { version = "1.41.1", features = ["full", "tokio-macros"] }
 tracing = "0.1.40"
 tracing-loki = "0.2.5"
 tracing-subscriber = { version = "0.3.18", features = ["fmt", "env-filter"] }
 url = "2.5.3"
+uuid = { version = "1.11.0", features = ["serde", "v4", "v7"] }

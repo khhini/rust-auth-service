@@ -1,2 +1,7 @@
 deployments
 target
+debug
+.git
+.idea
+.sqlx
+.env

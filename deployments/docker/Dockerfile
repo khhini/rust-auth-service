@@ -9,20 +9,26 @@ FROM base AS planner
 WORKDIR /app
 COPY . .
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
-    cargo chef prepare --recipe-path recipe.json
+  --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+  cargo chef prepare --recipe-path recipe.json
 
 # Stage 3: Build the Image
 FROM base AS builder
+ARG DATABASE_URL
+ENV DATABASE_URL ${DATABASE_URL}
+ENV TEST_DATABASE_URL ${DATABASE_URL}
+
 WORKDIR /app
 COPY --from=planner /app/recipe.json recipe.json
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
-    cargo chef cook --release --recipe-path recipe.json
+  --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+  cargo chef cook --release --recipe-path recipe.json
+
 COPY . .
+
 RUN --mount=type=cache,target=/usr/local/cargo/registry \
-    --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
-    cargo build --release
+  --mount=type=cache,target=$SCCACHE_DIR,sharing=locked \
+  cargo build --release
 
 # Stage 4: reate a slim runtime image
 FROM gcr.io/distroless/cc-debian12
